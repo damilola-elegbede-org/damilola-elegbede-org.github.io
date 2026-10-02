@@ -1,33 +1,10 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>damilola.tech — Damilola Elegbede</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono&display=swap">
-<style>
-:root{--bg:#f7f8f6;--fg:#1d2420;--muted:#5b665f;--line:#d9ded9;--card:#fff;--accent:#2f6b4f;--display:"Fraunces",Georgia,serif;--body:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141815;--fg:#e4e9e5;--muted:#9aa59e;--line:#2b332e;--card:#1b201c;--accent:#7cc4a0;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#141815;--fg:#e4e9e5;--muted:#9aa59e;--line:#2b332e;--card:#1b201c;--accent:#7cc4a0;color-scheme:dark}
-body{background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);margin:0;padding-block:32px 64px;padding-inline:16px}
-main,nav{max-width:720px;margin:0 auto}
-nav{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;margin-bottom:32px}
-nav a{color:var(--muted)}a{color:var(--accent)}
-h1{font:600 2.2rem/1.15 var(--display);text-wrap:balance;margin:.2em 0 .4em}
-h2{font:600 1.35rem/1.25 var(--display);margin:2em 0 .5em;text-wrap:balance}
-h3{font-size:1rem;margin:1.5em 0 .4em}
-p,li{max-width:68ch}
-code{font-family:var(--mono);font-size:.88em}
-pre{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px}
-pre.mermaid{text-align:center}
-.cards{display:grid;gap:16px;margin-top:24px}
-.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:18px 20px;text-decoration:none;color:var(--fg)}
-.card:hover,.card:focus-visible{border-color:var(--accent)}
-.card h2{margin:0 0 6px}.card p{margin:0 0 8px}.card small{color:var(--muted);font-family:var(--mono);font-size:12.5px}
-.lede{color:var(--muted);font-size:1.05rem}
-footer{max-width:720px;margin:48px auto 0;color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
-</style></head><body><nav><a href="./">Damilola Elegbede · Work</a><a href="https://github.com/damilola-elegbede">GitHub</a><a href="https://damilola.tech">damilola.tech</a><a href="https://www.linkedin.com/in/damilola-elegbede/">LinkedIn</a></nav><main><h1>damilola.tech: an AI résumé pipeline that is not allowed to make things up</h1>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>damilola.tech | Damilola Elegbede</title><meta name="description" content="An AI résumé pipeline that is not allowed to make things up. Every score has to cite text the server can verify."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400;500&display=swap"><link rel="stylesheet" href="assets/site.css"></head><body><header class="topbar wrap"><a class="home" href="./">Damilola Elegbede</a><nav><a href="https://github.com/damilola-elegbede">GitHub</a><a href="https://damilola.tech">damilola.tech</a><a href="https://www.linkedin.com/in/damilola-elegbede/">LinkedIn</a></nav></header><main class="wrap"><div class="page"><aside class="toc"><a class="back" href="./">All work</a><ol><li><a href="#problem">Problem</a></li><li><a href="#architecture">Architecture</a></li><li><a href="#key-design-decisions">Key design decisions</a></li><li><a href="#stack">Stack</a></li><li><a href="#outcomes">Outcomes</a></li></ol></aside><article><h1>damilola.tech: an AI résumé pipeline that is not allowed to make things up</h1><p class="lede">A portfolio site with a working AI toolchain behind it: fit scoring, tailored résumés, and cover letters, built so that every claim the model makes about my career has to be traceable to a source I wrote.</p>
 <p><strong>Live:</strong> <a href="https://damilola.tech">https://damilola.tech</a></p>
-<h2>One-line pitch</h2>
-<p>A portfolio site with a working AI toolchain behind it: fit scoring, tailored résumés, and cover letters, built so that every claim the model makes about my career has to be traceable to a source I wrote.</p>
-<h2>Problem</h2>
+
+<h2 id="problem">Problem</h2>
 <p>Applying well to senior roles means reading a job description, deciding if it is worth the time, and tailoring a résumé and cover letter. LLMs make that fast, and also make it easy to produce a résumé that sounds strong and is partly invented. A fabricated metric in a résumé is worse than a bland résumé.</p>
 <p>So the question I set out to answer was not &quot;can a model write this?&quot; It was &quot;what has to be true of the system so I can trust what comes out?&quot;</p>
-<h2>Architecture</h2>
+<h2 id="architecture">Architecture</h2>
 <p>The site is a Next.js app on Vercel. The public side is a landing page and a chatbot that answers questions about my experience. A separate authenticated surface runs the scoring and generation tools. The same capabilities are also exposed through a key-authenticated REST API and an MCP server, so scripts and agents can use them.</p>
 <p>The career source of truth is a private repository of structured and narrative files. It is never committed to this public-facing codebase. It is read at runtime from private object storage, and the model only sees it through server-side code.</p>
 <pre><code class="language-mermaid">flowchart LR
@@ -60,7 +37,7 @@ footer{max-width:720px;margin:48px auto 0;color:var(--muted);font-size:14px;bord
 <li>Server to model: the model sees only what the server hands it. Career data and generated PDFs live in private storage, not in the repo and not at guessable public URLs.</li>
 <li>Model to output: model text is untrusted until it passes the gates described below.</li>
 </ul>
-<h2>Key design decisions</h2>
+<h2 id="key-design-decisions">Key design decisions</h2>
 <p><strong>1. Quotes must be verifiable, or the score is zero.</strong>
 The résumé rubric scores each dimension in its own model call, and every score must cite verbatim text from the source. The server checks that the quote actually appears. An uncited or unverifiable score is clamped to zero rather than treated as &quot;low confidence.&quot; Tradeoff: some faithful quotes get rejected because the model cleaned up formatting. I fixed that with a normalizing matcher and then deliberately kept a single matcher for the whole codebase, after finding two copies had drifted apart and one was silently discarding good evidence.</p>
 <p><strong>2. Constrain the model, do not average it.</strong>
@@ -71,7 +48,7 @@ The pairwise-anchoring module returns a band and an explicit &quot;not calibrate
 Every proposed résumé edit is checked by plain code: does the original text exist in the résumé, does the new text share a term with the JD, does it invent a quantity that was not in the source. When an accepted edit fails to change the document, it is reported, not swallowed. A regex-and-rules layer is less clever than a second LLM judge, and also predictable, testable, and cheap.</p>
 <p><strong>5. Fail loudly when the data is missing.</strong>
 If the career corpus cannot be loaded, scoring errors out. It does not quietly fall back to the résumé, because that would produce a plausible but lower score and a false negative nobody would see. The cover-letter path treats the same failure as non-fatal, since a missing context only weakens prose and does not corrupt a number. Same failure, different handling, chosen per output type.</p>
-<h2>Stack</h2>
+<h2 id="stack">Stack</h2>
 <ul>
 <li>Next.js (App Router), React, TypeScript in strict mode, Tailwind CSS</li>
 <li>Anthropic Claude models via the Anthropic SDK and the Vercel AI SDK, with a stronger advisor model consulted by the primary model on résumé generation (bounded use count, with a retry path that drops the advisor if it truncates)</li>
@@ -80,7 +57,7 @@ If the career corpus cannot be loaded, scoring errors out. It does not quietly f
 <li>Model Context Protocol server so agents can call the tools</li>
 <li>Vitest, React Testing Library, Playwright; GitHub Actions</li>
 </ul>
-<h2>Outcomes</h2>
+<h2 id="outcomes">Outcomes</h2>
 <ul>
 <li><strong>Test suite:</strong> roughly 3,300 unit and integration test cases across about 215 test files, plus about 130 Playwright end-to-end tests across 13 specs. (Counted by source scan, not by a test run.)</li>
 <li><strong>Delivery:</strong> 264 merged pull requests since January 2026, with changes landing through CI-gated PRs.</li>
@@ -89,6 +66,4 @@ If the career corpus cannot be loaded, scoring errors out. It does not quietly f
 <li><strong>Guard tests that encode past mistakes:</strong> a test that fails if any call to the current model sets a parameter it rejects; a test that fails if any production file reads career data through the public path.</li>
 <li><strong>Not measured:</strong> no accuracy benchmark or user-outcome numbers exist for the scoring yet. The calibration work against real application outcomes is explicitly still open, and the code says so.</li>
 </ul>
-</main><footer>Source for these projects is private. Code walkthroughs are available on request through <a href="https://www.linkedin.com/in/damilola-elegbede/">LinkedIn</a>.</footer><script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
-<script>document.querySelectorAll('pre > code.language-mermaid').forEach(c=>{const p=c.parentElement;p.className='mermaid';p.textContent=c.textContent});
-mermaid.initialize({startOnLoad:false,theme:matchMedia('(prefers-color-scheme: dark)').matches?'dark':'neutral'});mermaid.run();</script></body></html>
+</article></div><template id="tb"><div class="titleblock"><div class="t">damilola.tech: architecture</div><div><span>Sheet</span>2 of 4</div><div><span>Drawn by</span>D. Elegbede</div><div><span>Revision</span>2026-10</div><div><span>Status</span>Live</div></div></template></main><footer class="wrap">Source for these projects is private. I walk through the code on request; reach me on <a href="https://www.linkedin.com/in/damilola-elegbede/">LinkedIn</a>.</footer><script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script><script src="assets/page.js"></script></body></html>
