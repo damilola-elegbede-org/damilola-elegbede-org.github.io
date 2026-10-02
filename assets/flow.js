@@ -12,7 +12,7 @@
   var LABEL={sch:'Schedules',chat:'Chat, allowlisted',hook:'Signed webhooks',q:'Per-agent queue',b:'Budget check',
     a:'Agent session',id:'Identity wrappers',out:'Outside services',def:'Held, owner alerted'};
   var EDGES=[['sch','q'],['chat','q'],['hook','q'],['q','b'],['b','a'],['a','id'],['id','out'],['b','def']];
-  var paths={}, mode=null, tokens=[], last=0, spawnAt=0, running=false;
+  var paths={}, mode=null, tokens=[], last=0, spawnAt=0, running=false, raf=0, inView=false;
 
   function el(t,a,p){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e}
   function anchor(s,t,lay){
@@ -56,14 +56,14 @@
       var last1=k.i===k.route.length-1; k.c.style.opacity=last1?Math.max(0,1-k.d/len*1.1):1;
       if(k.held&&k.route[k.i]==='q>b'&&k.d>len*.6) k.c.setAttribute('class','tok def');
       return true});
-    requestAnimationFrame(frame);
+    raf=requestAnimationFrame(frame);
   }
-  function start(){ if(reduce||running) return; running=true; last=0; requestAnimationFrame(frame) }
-  function stop(){ running=false }
+  function start(){ if(reduce||running||document.hidden||!inView) return; running=true; last=0; raf=requestAnimationFrame(frame) }
+  function stop(){ running=false; cancelAnimationFrame(raf); raf=0 }
   build();
   addEventListener('resize',function(){var was=mode;build(); if(was!==mode&&running){stop();start()}});
   if(!reduce){
-    new IntersectionObserver(function(es){es[0].isIntersecting?start():stop()}).observe(svg);
+    new IntersectionObserver(function(es){inView=es[0].isIntersecting; inView?start():stop()}).observe(svg);
     document.addEventListener('visibilitychange',function(){document.hidden?stop():start()});
   }
 })();
