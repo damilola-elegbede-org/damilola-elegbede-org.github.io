@@ -1,0 +1,110 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>A Lo Cubano Boulder Fest — Damilola Elegbede</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono&display=swap">
+<style>
+:root{--bg:#f7f8f6;--fg:#1d2420;--muted:#5b665f;--line:#d9ded9;--card:#fff;--accent:#2f6b4f;--display:"Fraunces",Georgia,serif;--body:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141815;--fg:#e4e9e5;--muted:#9aa59e;--line:#2b332e;--card:#1b201c;--accent:#7cc4a0;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141815;--fg:#e4e9e5;--muted:#9aa59e;--line:#2b332e;--card:#1b201c;--accent:#7cc4a0;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);margin:0;padding-block:32px 64px;padding-inline:16px}
+main,nav{max-width:720px;margin:0 auto}
+nav{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;margin-bottom:32px}
+nav a{color:var(--muted)}a{color:var(--accent)}
+h1{font:600 2.2rem/1.15 var(--display);text-wrap:balance;margin:.2em 0 .4em}
+h2{font:600 1.35rem/1.25 var(--display);margin:2em 0 .5em;text-wrap:balance}
+h3{font-size:1rem;margin:1.5em 0 .4em}
+p,li{max-width:68ch}
+code{font-family:var(--mono);font-size:.88em}
+pre{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px}
+pre.mermaid{text-align:center}
+.cards{display:grid;gap:16px;margin-top:24px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:18px 20px;text-decoration:none;color:var(--fg)}
+.card:hover,.card:focus-visible{border-color:var(--accent)}
+.card h2{margin:0 0 6px}.card p{margin:0 0 8px}.card small{color:var(--muted);font-family:var(--mono);font-size:12.5px}
+.lede{color:var(--muted);font-size:1.05rem}
+footer{max-width:720px;margin:48px auto 0;color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+</style></head><body><nav><a href="./">Damilola Elegbede · Work</a><a href="https://github.com/damilola-elegbede">GitHub</a><a href="https://damilola.tech">damilola.tech</a><a href="https://www.linkedin.com/in/damilola-elegbede/">LinkedIn</a></nav><main><h1>A Lo Cubano Boulder Fest: ticketing and event platform</h1>
+<h2>One-line pitch</h2>
+<p>A full-stack ticketing, check-in and admin platform I built and run for a Cuban salsa festival in Boulder, Colorado. It sells real tickets, so the purchase path is treated as production at all times.
+Live site: <a href="https://www.alocubanoboulderfest.org">https://www.alocubanoboulderfest.org</a></p>
+<h2>Problem</h2>
+<p>A volunteer-run festival needs to sell tickets, take donations, email attendees, and scan people in at the door, without a platform team and without losing money or overselling a capped event. Traffic is spiky: quiet most of the year, then heavy around on-sale and festival day. The previous setup was a static site plus manual work.</p>
+<p>What had to be true:</p>
+<ul>
+<li>Never sell more tickets than exist, even when many people check out at once.</li>
+<li>Never lose a paid order, even if the customer closes the tab or an email fails.</li>
+<li>Door staff scan QR codes on phones, fast, and a ticket cannot be admitted twice by accident.</li>
+<li>Money reported in the admin dashboard must match what the payment provider says.</li>
+<li>A small team can operate it, so recovery has to be documented and rehearsed.</li>
+</ul>
+<h2>Architecture</h2>
+<p><strong>Components</strong></p>
+<ul>
+<li>Static front end (vanilla JS, with a small React/Vite layer for some pages) served from Vercel&#39;s CDN.</li>
+<li>About 90 serverless API functions on Vercel: checkout, payments, tickets, wallet passes, QR validation, admin, scheduled jobs.</li>
+<li>libSQL on Turso as the system of record, with 86 versioned SQL migrations applied at deploy time.</li>
+<li>Stripe and PayPal for payments. Brevo for email. Apple Wallet and Google Wallet for passes. Sentry for errors.</li>
+<li>Scheduled jobs for reservation cleanup, email retry, delivery monitoring, event status, and audit retention.</li>
+</ul>
+<p><strong>Data flow (purchase)</strong></p>
+<ol>
+<li>The browser cart calls the API. The server checks availability and places a time-limited reservation in one atomic database batch.</li>
+<li>The customer pays through Stripe or PayPal on the provider&#39;s hosted flow, so card data never reaches my servers.</li>
+<li>The provider calls a webhook. The server verifies the signature, records the raw event first (idempotency), then creates tickets.</li>
+<li>Ticket creation is idempotent, so the webhook, the success redirect and retries all converge on the same result.</li>
+<li>A confirmation email goes out with a failed-send retry queue. The ticket gets a signed QR code and optional wallet pass.</li>
+</ol>
+<p><strong>Data flow (door)</strong>
+Scanner calls the validate endpoint. A compare-and-swap update marks the scan, so concurrent scans of one ticket cannot both succeed.</p>
+<p><strong>Trust boundaries</strong></p>
+<ul>
+<li>Browser to API: untrusted input, validated on the server; the server is the authority on price, stock and ticket status.</li>
+<li>Payment provider to webhook: only signed events are accepted.</li>
+<li>Admin area: separate session, multi-factor sign-in, CSRF protection, rate limiting, audit log of every action.</li>
+<li>Ticket holders: access via short-lived, scoped credentials, not account passwords.</li>
+</ul>
+<pre><code class="language-mermaid">flowchart LR
+  B[Browser cart] --&gt; API[Serverless API]
+  API --&gt; RES[(Reservation + stock check)]
+  API --&gt; PAY[Stripe / PayPal hosted checkout]
+  PAY -- signed webhook --&gt; WH[Webhook handler]
+  WH --&gt; DB[(Turso libSQL)]
+  RES --&gt; DB
+  WH --&gt; TK[Idempotent ticket creation]
+  TK --&gt; EM[Email + retry queue]
+  TK --&gt; QR[Signed QR + wallet pass]
+  SC[Door scanner] --&gt; VAL[Validate: atomic scan]
+  VAL --&gt; DB
+  ADM[Admin: MFA + audit log] --&gt; DB
+  CRON[Scheduled jobs] --&gt; DB
+  BK[Daily backups] --&gt; DB
+</code></pre>
+<h2>Key design decisions</h2>
+<ol>
+<li><strong>Reserve first, fulfil on a verified webhook.</strong> Stock is held for 30 minutes in an atomic batch, and tickets are only created when the provider confirms payment. Tradeoff: more moving parts than &quot;create ticket on redirect&quot;, and abandoned carts briefly hold stock (a cron releases them). In return, overselling needs a race that the database refuses.</li>
+<li><strong>Idempotency everywhere money moves.</strong> Raw payment events are stored before processing, and ticket creation is create-or-retrieve. Tradeoff: extra tables and some duplicated-looking writes. Benefit: webhook retries, double clicks and the success page racing the webhook are all safe.</li>
+<li><strong>Serverless plus SQLite-family database instead of servers.</strong> No machines to patch and cost near zero off-season. Tradeoff: cold starts, connection handling, and no automated down-migrations (SQLite DDL limits). I handle that with a promise-based lazy singleton for connections, a destructive-migration guard, and tiered backups.</li>
+<li><strong>Plain JavaScript front end.</strong> Smaller payload for people on phones in a crowd. Tradeoff: less structure than a framework, so I rely on contract tests that catch cross-file mistakes a framework would catch at compile time.</li>
+<li><strong>Tests that prove gates fire.</strong> After several CI checks turned out to be green while testing nothing, I added tests for the gates themselves and fail-closed behavior on truncated runs. Tradeoff: more CI code to maintain.</li>
+</ol>
+<h2>Stack</h2>
+<ul>
+<li>Front end: HTML/CSS/vanilla JS, React 19 + Vite for some pages</li>
+<li>Back end: Node 22 serverless functions on Vercel</li>
+<li>Data: Turso (libSQL), SQL migrations, Vercel Blob for backups</li>
+<li>Payments: Stripe, PayPal</li>
+<li>Email and passes: Brevo, Apple Wallet, Google Wallet</li>
+<li>Quality: Vitest (unit and integration), Playwright (E2E, axe accessibility), ESLint/HTMLHint/markdownlint, k6 load test, Sentry</li>
+<li>CI/CD: GitHub Actions, Vercel preview deployments</li>
+</ul>
+<h2>Outcomes</h2>
+<ul>
+<li>Shipped and running a live public site that sells tickets for real events (spring 2026 festival plus smaller weekender events).</li>
+<li>505 merged pull requests between July 2025 and October 2026, with a single-digit-day cadence of small, reviewed changes.</li>
+<li>About 8,000 automated test cases across ~455 test files (unit, integration, E2E); counted statically, see evidence.</li>
+<li>Pre-festival load test: 60 concurrent QR scans completed in 401 ms with zero 5xx errors and no double-admits (compare-and-swap).</li>
+<li>Written go/no-go checklist, go-live runbook, incident-response and event-day monitoring runbooks before the 2026 festival.</li>
+<li>Three-tier database recovery: point-in-time restore (24h), daily compressed dumps (30 days), monthly branches (12 months). Documented targets: recovery in under 5 minutes for same-day mistakes, under 24 hours of data loss in the worst tier.</li>
+<li>Recent hardening work: removed an unauthenticated ticket-edit route, moved a ticket-view credential out of the URL, removed a preview-environment MFA bypass, stopped logging attendee data. Each was found by audit, fixed with a regression test.</li>
+<li>Honest note: branch protection does not yet require status checks; I documented that gap and the fix in the repo rather than hiding it.</li>
+</ul>
+</main><footer>Source for these projects is private. Code walkthroughs are available on request through <a href="https://www.linkedin.com/in/damilola-elegbede/">LinkedIn</a>.</footer><script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script>document.querySelectorAll('pre > code.language-mermaid').forEach(c=>{const p=c.parentElement;p.className='mermaid';p.textContent=c.textContent});
+mermaid.initialize({startOnLoad:false,theme:matchMedia('(prefers-color-scheme: dark)').matches?'dark':'neutral'});mermaid.run();</script></body></html>

@@ -1,0 +1,81 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BareClaude — Damilola Elegbede</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono&display=swap">
+<style>
+:root{--bg:#f7f8f6;--fg:#1d2420;--muted:#5b665f;--line:#d9ded9;--card:#fff;--accent:#2f6b4f;--display:"Fraunces",Georgia,serif;--body:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141815;--fg:#e4e9e5;--muted:#9aa59e;--line:#2b332e;--card:#1b201c;--accent:#7cc4a0;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141815;--fg:#e4e9e5;--muted:#9aa59e;--line:#2b332e;--card:#1b201c;--accent:#7cc4a0;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);margin:0;padding-block:32px 64px;padding-inline:16px}
+main,nav{max-width:720px;margin:0 auto}
+nav{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;margin-bottom:32px}
+nav a{color:var(--muted)}a{color:var(--accent)}
+h1{font:600 2.2rem/1.15 var(--display);text-wrap:balance;margin:.2em 0 .4em}
+h2{font:600 1.35rem/1.25 var(--display);margin:2em 0 .5em;text-wrap:balance}
+h3{font-size:1rem;margin:1.5em 0 .4em}
+p,li{max-width:68ch}
+code{font-family:var(--mono);font-size:.88em}
+pre{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px}
+pre.mermaid{text-align:center}
+.cards{display:grid;gap:16px;margin-top:24px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:18px 20px;text-decoration:none;color:var(--fg)}
+.card:hover,.card:focus-visible{border-color:var(--accent)}
+.card h2{margin:0 0 6px}.card p{margin:0 0 8px}.card small{color:var(--muted);font-family:var(--mono);font-size:12.5px}
+.lede{color:var(--muted);font-size:1.05rem}
+footer{max-width:720px;margin:48px auto 0;color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+</style></head><body><nav><a href="./">Damilola Elegbede · Work</a><a href="https://github.com/damilola-elegbede">GitHub</a><a href="https://damilola.tech">damilola.tech</a><a href="https://www.linkedin.com/in/damilola-elegbede/">LinkedIn</a></nav><main><h1>BareClaude</h1>
+<h2>One-line pitch</h2>
+<p>A personal agentic operating system: a scheduled, budget-capped, audited AI chief of staff that runs finance, planning, legal, travel and ops work for one person, built and changed under the same controls I would expect on a production team.</p>
+<h2>Problem</h2>
+<p>I wanted an AI assistant that does recurring operational work without me prompting it, and I did not want to trust it blindly. Chat-only assistants forget context, have no schedule, and leave no audit trail. Agent frameworks that give a model broad credentials fail in the worst way: one bad run can message people, spend money, or merge code. The real problem was operating an unattended agent safely: bounded cost, bounded authority, visible failures, and changes that cannot silently break the thing running in production.</p>
+<h2>Architecture</h2>
+<p>BareClaude is a monorepo with three parts: an agent workspace (identity, rules, skills, schedules), shared infrastructure (queue, workers, health, release, lint), and a dashboard that shows fleet state.</p>
+<p><strong>Data flow.</strong> Triggers (schedules, chat messages, signed webhooks) never run the agent directly. Each one writes a work item to a per-agent queue. A long-running worker pool picks items up, checks the daily cost budget, prepends recent context, and starts a headless model session. The session reaches external systems only through identity wrappers. Results, logs and telemetry go to local state, and a health runner ingests them into the dashboard database.</p>
+<p><strong>Trust boundaries.</strong></p>
+<ol>
+<li>Inbound: webhooks are signature-verified at a separate receiver process before anything is enqueued; chat is allowlisted.</li>
+<li>Agent to outside world: every call goes through a per-agent identity wrapper. The agent never uses my personal logins. Credentials are encrypted at rest and scoped per agent.</li>
+<li>Agent to code: the agent files requests; a human owns engineering implementation, review and merge.</li>
+<li>Production: the live checkout is production, so changes happen in isolated worktrees and pass lint and CI first.</li>
+</ol>
+<pre><code class="language-mermaid">flowchart LR
+  T[Schedules] --&gt; Q[Per-agent queue]
+  C[Chat inbound, allowlisted] --&gt; Q
+  W[Signed webhooks] --&gt; R[Webhook receiver] --&gt; Q
+  Q --&gt; P[Worker pool]
+  P --&gt; B{Budget check}
+  B --&gt;|ok| S[Headless agent session]
+  B --&gt;|over| X[Deferred and alerted]
+  S --&gt; I[Identity wrappers]
+  I --&gt; E[External services]
+  S --&gt; L[Logs and telemetry]
+  L --&gt; H[Health runner]
+  H --&gt; D[Dashboard]
+  H --&gt; A[Alerts]
+</code></pre>
+<h2>Key design decisions</h2>
+<ol>
+<li><strong>Queue between every trigger and the agent.</strong> Triggers enqueue; workers run. Tradeoff: an added hop and more moving parts than calling the model from a cron job, in exchange for one place to enforce budgets, concurrency caps, context injection, retries and drain-on-shutdown. Every entry path gets the same controls.</li>
+<li><strong>Identity wrappers instead of bare CLIs or broad tool servers.</strong> Agents call external services through thin per-agent scripts, not raw CLIs or general-purpose tool servers. Tradeoff: I maintain a wrapper per service and lose some convenience, but authority is narrow, auditable, and never borrows my own credentials.</li>
+<li><strong>Human owns engineering, agent files requests.</strong> After running a fleet of specialist agents that wrote and merged code, I retired it. The agent now files deduplicated requests and a human implements, reviews and merges. Tradeoff: lower throughput on engineering tasks, higher trust and a clearer accountability line. The retirement was a recorded decision, not a quiet deletion.</li>
+<li><strong>Lint rules as the memory of past incidents.</strong> Each recurring failure became a check rather than a note: 40 forbid-style lint rules run before merge. Tradeoff: more friction on every change, but lessons survive staff turnover, including the agent&#39;s own session turnover.</li>
+<li><strong>No staging; production discipline instead.</strong> A single-person system does not justify a duplicate environment, so the live checkout is production, work happens in isolated worktrees, changes must pass a surface-impact review for shared files, and releases are built as immutable copies. Tradeoff: less safety than a real staging tier, mitigated by checks, recovery playbooks and tested backups.</li>
+</ol>
+<h2>Stack</h2>
+<ul>
+<li>Bun and TypeScript for long-running workers, health runner and chat listener</li>
+<li>Node 22, Next.js 16, React 19, Tailwind v4 for the dashboard</li>
+<li>SQLite for dashboard and telemetry storage</li>
+<li>Bash and Python for wrappers, scripts and lint</li>
+<li>Native OS scheduler for cron-style jobs</li>
+<li>GitHub Actions for secret scanning, dashboard lint and test, webhook signature tests, infra tests</li>
+<li>Claude Code headless sessions as the agent runtime; Codex used for independent review</li>
+</ul>
+<h2>Outcomes</h2>
+<ul>
+<li>1,000+ merged pull requests in about 10 weeks (late July to early October 2026); the repo&#39;s PR numbering reaches 1,547 since it was created in early June.</li>
+<li>120 PRs merged in the last 9 days sampled, with a median of about 2.6 hours from open to merge across the most recent 1,000.</li>
+<li>35 written architecture and operations decision records, 22 operational playbooks, 40 automated lint rules.</li>
+<li>About 740 test scripts in the repository, plus separate test suites for the workers, health runner and dashboard.</li>
+<li>A failure taxonomy for agent runs (process failure, model-reported error, missing artifact, truncated result, timeout), so failures are classified rather than just logged.</li>
+</ul>
+</main><footer>Source for these projects is private. Code walkthroughs are available on request through <a href="https://www.linkedin.com/in/damilola-elegbede/">LinkedIn</a>.</footer><script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script>document.querySelectorAll('pre > code.language-mermaid').forEach(c=>{const p=c.parentElement;p.className='mermaid';p.textContent=c.textContent});
+mermaid.initialize({startOnLoad:false,theme:matchMedia('(prefers-color-scheme: dark)').matches?'dark':'neutral'});mermaid.run();</script></body></html>
