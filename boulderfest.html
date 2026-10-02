@@ -1,30 +1,7 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>A Lo Cubano Boulder Fest — Damilola Elegbede</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono&display=swap">
-<style>
-:root{--bg:#f7f8f6;--fg:#1d2420;--muted:#5b665f;--line:#d9ded9;--card:#fff;--accent:#2f6b4f;--display:"Fraunces",Georgia,serif;--body:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141815;--fg:#e4e9e5;--muted:#9aa59e;--line:#2b332e;--card:#1b201c;--accent:#7cc4a0;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#141815;--fg:#e4e9e5;--muted:#9aa59e;--line:#2b332e;--card:#1b201c;--accent:#7cc4a0;color-scheme:dark}
-body{background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);margin:0;padding-block:32px 64px;padding-inline:16px}
-main,nav{max-width:720px;margin:0 auto}
-nav{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;margin-bottom:32px}
-nav a{color:var(--muted)}a{color:var(--accent)}
-h1{font:600 2.2rem/1.15 var(--display);text-wrap:balance;margin:.2em 0 .4em}
-h2{font:600 1.35rem/1.25 var(--display);margin:2em 0 .5em;text-wrap:balance}
-h3{font-size:1rem;margin:1.5em 0 .4em}
-p,li{max-width:68ch}
-code{font-family:var(--mono);font-size:.88em}
-pre{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px}
-pre.mermaid{text-align:center}
-.cards{display:grid;gap:16px;margin-top:24px}
-.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:18px 20px;text-decoration:none;color:var(--fg)}
-.card:hover,.card:focus-visible{border-color:var(--accent)}
-.card h2{margin:0 0 6px}.card p{margin:0 0 8px}.card small{color:var(--muted);font-family:var(--mono);font-size:12.5px}
-.lede{color:var(--muted);font-size:1.05rem}
-footer{max-width:720px;margin:48px auto 0;color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
-</style></head><body><nav><a href="./">Damilola Elegbede · Work</a><a href="https://github.com/damilola-elegbede">GitHub</a><a href="https://damilola.tech">damilola.tech</a><a href="https://www.linkedin.com/in/damilola-elegbede/">LinkedIn</a></nav><main><h1>A Lo Cubano Boulder Fest: ticketing and event platform</h1>
-<h2>One-line pitch</h2>
-<p>A full-stack ticketing, check-in and admin platform I built and run for a Cuban salsa festival in Boulder, Colorado. It sells real tickets, so the purchase path is treated as production at all times.
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>A Lo Cubano Boulder Fest | Damilola Elegbede</title><meta name="description" content="Ticketing, payments, and QR check-in for a live salsa festival, load-tested before doors opened."><meta property="og:type" content="website"><meta property="og:title" content="A Lo Cubano Boulder Fest | Damilola Elegbede"><meta property="og:description" content="Ticketing, payments, and QR check-in for a live salsa festival, load-tested before doors opened."><meta property="og:url" content="https://damilola-elegbede-org.github.io/boulderfest.html"><meta property="og:image" content="https://damilola-elegbede-org.github.io/assets/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400;500&display=swap"><link rel="stylesheet" href="assets/site.css"></head><body><header class="topbar wrap"><a class="home" href="./">Damilola Elegbede</a><nav><a href="https://github.com/damilola-elegbede">GitHub</a><a href="https://damilola.tech">damilola.tech</a><a href="https://www.linkedin.com/in/damilola-elegbede/">LinkedIn</a></nav></header><main class="wrap"><div class="page"><aside class="toc"><a class="back" href="./">All work</a><ol><li><a href="#problem">Problem</a></li><li><a href="#architecture">Architecture</a></li><li><a href="#key-design-decisions">Key design decisions</a></li><li><a href="#stack">Stack</a></li><li><a href="#outcomes">Outcomes</a></li></ol></aside><article><h1>A Lo Cubano Boulder Fest: ticketing and event platform</h1><p class="lede">A full-stack ticketing, check-in and admin platform I built and run for a Cuban salsa festival in Boulder, Colorado. It sells real tickets, so the purchase path is treated as production at all times.
 Live site: <a href="https://www.alocubanoboulderfest.org">https://www.alocubanoboulderfest.org</a></p>
-<h2>Problem</h2>
+
+<h2 id="problem">Problem</h2>
 <p>A volunteer-run festival needs to sell tickets, take donations, email attendees, and scan people in at the door, without a platform team and without losing money or overselling a capped event. Traffic is spiky: quiet most of the year, then heavy around on-sale and festival day. The previous setup was a static site plus manual work.</p>
 <p>What had to be true:</p>
 <ul>
@@ -34,7 +11,7 @@ Live site: <a href="https://www.alocubanoboulderfest.org">https://www.alocubanob
 <li>Money reported in the admin dashboard must match what the payment provider says.</li>
 <li>A small team can operate it, so recovery has to be documented and rehearsed.</li>
 </ul>
-<h2>Architecture</h2>
+<h2 id="architecture">Architecture</h2>
 <p><strong>Components</strong></p>
 <ul>
 <li>Static front end (vanilla JS, with a small React/Vite layer for some pages) served from Vercel&#39;s CDN.</li>
@@ -76,7 +53,7 @@ Scanner calls the validate endpoint. A compare-and-swap update marks the scan, s
   CRON[Scheduled jobs] --&gt; DB
   BK[Daily backups] --&gt; DB
 </code></pre>
-<h2>Key design decisions</h2>
+<h2 id="key-design-decisions">Key design decisions</h2>
 <ol>
 <li><strong>Reserve first, fulfil on a verified webhook.</strong> Stock is held for 30 minutes in an atomic batch, and tickets are only created when the provider confirms payment. Tradeoff: more moving parts than &quot;create ticket on redirect&quot;, and abandoned carts briefly hold stock (a cron releases them). In return, overselling needs a race that the database refuses.</li>
 <li><strong>Idempotency everywhere money moves.</strong> Raw payment events are stored before processing, and ticket creation is create-or-retrieve. Tradeoff: extra tables and some duplicated-looking writes. Benefit: webhook retries, double clicks and the success page racing the webhook are all safe.</li>
@@ -84,7 +61,7 @@ Scanner calls the validate endpoint. A compare-and-swap update marks the scan, s
 <li><strong>Plain JavaScript front end.</strong> Smaller payload for people on phones in a crowd. Tradeoff: less structure than a framework, so I rely on contract tests that catch cross-file mistakes a framework would catch at compile time.</li>
 <li><strong>Tests that prove gates fire.</strong> After several CI checks turned out to be green while testing nothing, I added tests for the gates themselves and fail-closed behavior on truncated runs. Tradeoff: more CI code to maintain.</li>
 </ol>
-<h2>Stack</h2>
+<h2 id="stack">Stack</h2>
 <ul>
 <li>Front end: HTML/CSS/vanilla JS, React 19 + Vite for some pages</li>
 <li>Back end: Node 22 serverless functions on Vercel</li>
@@ -94,7 +71,7 @@ Scanner calls the validate endpoint. A compare-and-swap update marks the scan, s
 <li>Quality: Vitest (unit and integration), Playwright (E2E, axe accessibility), ESLint/HTMLHint/markdownlint, k6 load test, Sentry</li>
 <li>CI/CD: GitHub Actions, Vercel preview deployments</li>
 </ul>
-<h2>Outcomes</h2>
+<h2 id="outcomes">Outcomes</h2>
 <ul>
 <li>Shipped and running a live public site that sells tickets for real events (spring 2026 festival plus smaller weekender events).</li>
 <li>505 merged pull requests between July 2025 and October 2026, with a single-digit-day cadence of small, reviewed changes.</li>
@@ -105,6 +82,4 @@ Scanner calls the validate endpoint. A compare-and-swap update marks the scan, s
 <li>Recent hardening work: removed an unauthenticated ticket-edit route, moved a ticket-view credential out of the URL, removed a preview-environment MFA bypass, stopped logging attendee data. Each was found by audit, fixed with a regression test.</li>
 <li>Honest note: branch protection does not yet require status checks; I documented that gap and the fix in the repo rather than hiding it.</li>
 </ul>
-</main><footer>Source for these projects is private. Code walkthroughs are available on request through <a href="https://www.linkedin.com/in/damilola-elegbede/">LinkedIn</a>.</footer><script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
-<script>document.querySelectorAll('pre > code.language-mermaid').forEach(c=>{const p=c.parentElement;p.className='mermaid';p.textContent=c.textContent});
-mermaid.initialize({startOnLoad:false,theme:matchMedia('(prefers-color-scheme: dark)').matches?'dark':'neutral'});mermaid.run();</script></body></html>
+</article></div><template id="tb"><div class="titleblock"><div class="t">A Lo Cubano Boulder Fest: architecture</div><div><span>Sheet</span>3 of 4</div><div><span>Drawn by</span>D. Elegbede</div><div><span>Revision</span>2026-10</div><div><span>Status</span>Live</div></div></template></main><footer class="wrap">Source for these projects is private. I walk through the code on request; reach me on <a href="https://www.linkedin.com/in/damilola-elegbede/">LinkedIn</a>.</footer><script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script><script src="assets/page.js"></script></body></html>
